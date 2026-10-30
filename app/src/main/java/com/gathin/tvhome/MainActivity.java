@@ -483,6 +483,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // the theme's background, so launch looks the same.
         getWindow().setBackgroundDrawable(null);
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
+        // Personal or downloaded wallpaper.jpg takes precedence over the bundled sunset scenery.
+        View sunset = findViewById(R.id.sunsetScenery);
+        if (sunset != null && cfg.wallpaperEnabled && !cfg.wallpapers.isEmpty()) {
+            sunset.setVisibility(View.GONE);
+        }
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
         glass = findViewById(R.id.glass);
@@ -1022,6 +1027,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        AppleQuickAccessView shortcuts = findViewById(R.id.quickAccess);
+        if (shortcuts != null) shortcuts.refresh();
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();
