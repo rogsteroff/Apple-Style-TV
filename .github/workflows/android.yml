@@ -1,5 +1,6 @@
 
 name: Build Apple Style TV APK
+# Rebuild after configuring permanent signing secrets
 
 on:
   push:
