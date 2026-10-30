@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-build-${{ github.ref }}
@@ -113,3 +113,22 @@ jobs:
           path: output/*.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish signed release for the updater
+        if: github.ref == 'refs/heads/feature/weather-vpn-widgets'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION=$(awk -F"'" '/versionName/ {print $2; exit}' app/build.gradle)
+          test -n "$VERSION"
+          TAG="v$VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" output/AppleStyleTV.apk output/AppleStyleTV-Updater.apk --clobber
+          else
+            gh release create "$TAG" output/AppleStyleTV.apk output/AppleStyleTV-Updater.apk \
+              --target "$GITHUB_SHA" \
+              --title "Apple Style TV $VERSION" \
+              --notes "Signed APK built automatically from the Apple Style TV source. Includes weather-only home widget and bundled nonpersonal Apple-style wallpaper."
+          fi
