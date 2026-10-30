@@ -266,7 +266,7 @@
     <!-- Optional VPN app the network pill opens (hold the pill for Wi-Fi settings), e.g. the package of the
          VPN you use. Empty: the pill opens Wi-Fi settings. The green VPN badge shows for any VPN either way;
          with an app set here, a red "VPN off" badge also shows while no VPN is up. -->
-    <string name="vpn_app" translatable="false"></string>
+    <string name="vpn_app" translatable="false">com.happproxy</string>
     <!-- The VPN as its own pill after the network pill, instead of a badge inside it: solid green with a lock while a
          VPN is up, solid red "VPN off" while none is and vpn_app is installed. Pressing it opens vpn_app (without it,
          the App library, or VPN settings when app_library is off), and the network pill then always opens Wi-Fi
