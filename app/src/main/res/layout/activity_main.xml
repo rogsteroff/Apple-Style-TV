@@ -23,6 +23,13 @@
         android:layout_height="match_parent"
         android:importantForAccessibility="no" />
 
+    <!-- Original sunset/lake scenery, painted locally so the launcher works without network. -->
+    <com.gathin.tvhome.AppleLandscapeView
+        android:id="@+id/appleLandscape"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
     <!-- Time-of-day backdrop, drawn once a minute (config.xml sky_intensity; 0 keeps it hidden). -->
     <com.gathin.tvhome.SkyView
         android:id="@+id/sky"
@@ -427,6 +434,44 @@
             android:textSize="15sp"
             android:fontFamily="@string/font_medium"
             android:letterSpacing="0.04" />
+
+        <!-- Real TV-app launchers, focusable with the remote. Weather remains above on the right. -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="37dp"
+            android:focusable="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="10dp"
+            android:text="Быстрый доступ"
+            android:textColor="#F1FFFFFF"
+            android:textSize="19sp"
+            android:fontFamily="@string/font_medium"
+            android:focusable="false" />
+
+        <com.gathin.tvhome.AppleQuickAccessView
+            android:id="@+id/appleQuickAccess"
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/appleAppsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:layout_marginStart="5dp"
+            android:text="Все приложения"
+            android:textColor="#F1FFFFFF"
+            android:textSize="20sp"
+            android:fontFamily="@string/font_medium"
+            android:focusable="false" />
 
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
         <FrameLayout
