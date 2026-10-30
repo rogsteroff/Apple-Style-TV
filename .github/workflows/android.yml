@@ -71,12 +71,14 @@ jobs:
 
           cp "$APK" output/AppleStyleTV.apk
           cp updater/build/outputs/apk/release/updater-release.apk output/AppleStyleTV-Updater.apk
+          test -s output/AppleStyleTV.apk
+          test -s output/AppleStyleTV-Updater.apk
           ls -lh output/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AppleStyleTV-and-Updater-APK
-          path: output/AppleStyleTV.apk
+          path: output/*.apk
           if-no-files-found: error
           retention-days: 30
