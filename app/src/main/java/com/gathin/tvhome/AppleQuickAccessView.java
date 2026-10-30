@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -119,7 +120,7 @@ public final class AppleQuickAccessView extends LinearLayout {
     private Intent findByLabel(PackageManager pm, int slot) {
         Intent query = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
         Intent fallbackQuery = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> apps = pm.queryIntentActivities(query, 0);
+        List<ResolveInfo> apps = new ArrayList<>(pm.queryIntentActivities(query, 0));
         apps.addAll(pm.queryIntentActivities(fallbackQuery, 0));
         for (ResolveInfo app : apps) {
             if (app.activityInfo == null) continue;
@@ -129,7 +130,7 @@ public final class AppleQuickAccessView extends LinearLayout {
             switch (slot) {
                 case 0: match = label.contains("lampa") || label.contains("лампа"); break;
                 case 1: match = label.contains("youtube") || label.contains("ютуб"); break;
-                case 2: match = label.contains("hub plus") || label.contains("hub+") || label.contains("хаб плюс"); break;
+                case 2: match = label.contains("hub plus") || label.contains("hubplus") || label.contains("hub+") || label.contains("хаб плюс"); break;
                 default: match = label.contains("вконтакте") || label.equals("vk") || label.equals("vk video"); break;
             }
             if (!match) continue;
