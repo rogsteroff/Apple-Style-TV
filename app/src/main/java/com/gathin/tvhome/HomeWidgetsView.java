@@ -11,6 +11,7 @@ import android.net.NetworkCapabilities;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -32,7 +33,7 @@ public final class HomeWidgetsView extends LinearLayout {
             + "&current=temperature_2m,weather_code&timezone=Asia%2FNovosibirsk";
     private static final long REFRESH_MS = 30L * 60 * 1000;
     private final Handler main = new Handler(Looper.getMainLooper());
-    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private ExecutorService io = Executors.newSingleThreadExecutor();
     private final TextView weather;
     private final TextView vpn;
     private boolean active;
@@ -77,6 +78,11 @@ public final class HomeWidgetsView extends LinearLayout {
         addView(vpn, lp);
     }
 
+    /** Required by Android LayoutInflater for a view declared in XML. */
+    public HomeWidgetsView(Context context, AttributeSet attrs) {
+        this(context);
+    }
+
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private TextView label(int size) {
         TextView t = new TextView(getContext());
@@ -94,6 +100,7 @@ public final class HomeWidgetsView extends LinearLayout {
     }
     @Override protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        if (io.isShutdown()) io = Executors.newSingleThreadExecutor();
         active = true;
         main.post(refresh);
         main.post(vpnPoll);
