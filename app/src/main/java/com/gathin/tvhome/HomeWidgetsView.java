@@ -40,6 +40,7 @@ public final class HomeWidgetsView extends LinearLayout {
     private static final long REFRESH_MS = 30L * 60 * 1000;
     private static final long RETRY_MS = 3L * 60 * 1000;
     private boolean weatherLoading;
+    private int weatherGeneration;
     private final Handler main = new Handler(Looper.getMainLooper());
     private ExecutorService io = Executors.newSingleThreadExecutor();
     private final TextView weather;
@@ -121,6 +122,8 @@ public final class HomeWidgetsView extends LinearLayout {
     }
     @Override protected void onDetachedFromWindow() {
         active = false;
+        weatherGeneration++;
+        weatherLoading = false;
         main.removeCallbacks(refresh);
         main.removeCallbacks(vpnPoll);
         io.shutdownNow();
@@ -130,6 +133,7 @@ public final class HomeWidgetsView extends LinearLayout {
     private void loadWeather() {
         if (!active || weatherLoading) return;
         weatherLoading = true;
+        final int requestGeneration = weatherGeneration;
         weather.setText(CITY + "  ·  Обновление…");
         io.execute(() -> {
             String reading = null;
@@ -163,8 +167,8 @@ public final class HomeWidgetsView extends LinearLayout {
             final String primaryError = primaryFailure == null ? "" : primaryFailure.getClass().getSimpleName();
             final String backupError = backupFailure == null ? "" : backupFailure.getClass().getSimpleName();
             main.post(() -> {
+                if (!active || weatherGeneration != requestGeneration) return;
                 weatherLoading = false;
-                if (!active) return;
                 if (result != null) {
                     getContext().getSharedPreferences("home_weather", Context.MODE_PRIVATE)
                             .edit().putString("last", result).apply();
