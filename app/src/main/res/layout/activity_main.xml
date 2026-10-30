@@ -5,27 +5,9 @@
     android:layout_height="match_parent"
     android:background="@drawable/apple_twilight_background">
 
-    <!-- Built-in nonpersonal Apple-style abstract wallpaper. The bitmap is generated during CI.
-         Unlike a personal wallpaper, this ships inside the APK and needs no manual AirHQ transfer. -->
-    <ImageView
-        android:id="@+id/appleDefaultBackdrop"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/apple_abstract_background"
-        android:importantForAccessibility="no"
-        android:focusable="false" />
-
     <!-- Original sunset mountain/lake scenery. A custom wallpaper.jpg hides it in MainActivity. -->
     <com.gathin.tvhome.AppleSunsetLakeView
         android:id="@+id/sunsetScenery"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:importantForAccessibility="no" />
-
-    <!-- Original sunset/lake scenery, painted locally so the launcher works without network. -->
-    <com.gathin.tvhome.AppleLandscapeView
-        android:id="@+id/appleLandscape"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:importantForAccessibility="no" />
@@ -408,33 +390,6 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <!-- Four functional TV remote shortcuts, kept separate from the app grid. -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:text="БЫСТРЫЙ ДОСТУП"
-            android:textColor="#F0FFFFFF"
-            android:textSize="15sp"
-            android:fontFamily="@string/font_medium"
-            android:letterSpacing="0.04" />
-
-        <com.gathin.tvhome.AppleQuickAccessView
-            android:id="@+id/quickAccess"
-            android:layout_width="650dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="ВСЕ ПРИЛОЖЕНИЯ"
-            android:textColor="#F0FFFFFF"
-            android:textSize="15sp"
-            android:fontFamily="@string/font_medium"
-            android:letterSpacing="0.04" />
-
         <!-- Real TV-app launchers, focusable with the remote. Weather remains above on the right. -->
         <View
             android:layout_width="match_parent"
@@ -453,7 +408,7 @@
             android:focusable="false" />
 
         <com.gathin.tvhome.AppleQuickAccessView
-            android:id="@+id/appleQuickAccess"
+            android:id="@+id/quickAccess"
             android:layout_width="match_parent"
             android:layout_height="65dp"
             android:layout_marginStart="4dp"
@@ -502,7 +457,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="146dp"
+        android:layout_marginTop="109dp"
         android:layout_marginEnd="56dp" />
 
     <!-- The single floating glass highlight that springs between tiles. -->
