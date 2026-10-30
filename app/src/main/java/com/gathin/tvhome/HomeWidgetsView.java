@@ -51,13 +51,18 @@ public final class HomeWidgetsView extends LinearLayout {
         setOrientation(VERTICAL);
         setGravity(Gravity.END);
         setClipChildren(false);
-        weather = label(16);
-        weather.setText("НОВОСИБИРСК  ·  Погода…");
+        weather = label(20);
+        weather.setSingleLine(false);
+        weather.setMaxLines(3);
+        weather.setGravity(Gravity.CENTER_VERTICAL);
+        weather.setMinWidth(dp(245));
+        weather.setMinHeight(dp(86));
+        weather.setText("НОВОСИБИРСК\\n☁ Загрузка погоды…");
         weather.setFocusable(true);
         weather.setClickable(true);
         weather.setContentDescription("Погода в Новосибирске. Нажмите, чтобы обновить");
         weather.setOnClickListener(v -> loadWeather());
-        weather.setPadding(dp(18), dp(13), dp(18), dp(13));
+        weather.setPadding(dp(21), dp(11), dp(21), dp(11));
         weather.setBackground(panel());
         addView(weather, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     }
@@ -77,9 +82,9 @@ public final class HomeWidgetsView extends LinearLayout {
     }
     private GradientDrawable panel() {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0xB523293B);
+        d.setColor(0xB52E3655);
         d.setCornerRadius(dp(19));
-        d.setStroke(dp(1), 0x44FFFFFF);
+        d.setStroke(dp(1), 0x88DCE6FF);
         return d;
     }
     @Override protected void onAttachedToWindow() {
@@ -88,7 +93,7 @@ public final class HomeWidgetsView extends LinearLayout {
         active = true;
         String last = getContext().getSharedPreferences("home_weather", Context.MODE_PRIVATE)
                 .getString("last", null);
-        weather.setText(last == null ? CITY + "  ·  Загрузка погоды…" : last + "  ·  ранее");
+        weather.setText(last == null ? CITY + "\\n☁ Загрузка погоды…" : last + "  ·  ранее");
         main.post(refresh);
     }
     @Override protected void onDetachedFromWindow() {
@@ -104,7 +109,7 @@ public final class HomeWidgetsView extends LinearLayout {
         if (!active || weatherLoading) return;
         weatherLoading = true;
         final int requestGeneration = weatherGeneration;
-        weather.setText(CITY + "  ·  Обновление…");
+        weather.setText(CITY + "\\n☁ Обновление…");
         io.execute(() -> {
             String reading = null;
             Exception primaryFailure = null;
@@ -149,7 +154,7 @@ public final class HomeWidgetsView extends LinearLayout {
                 } else {
                     String last = getContext().getSharedPreferences("home_weather", Context.MODE_PRIVATE)
                             .getString("last", null);
-                    weather.setText(last == null ? CITY + "  ·  Нет данных · нажми для повтора"
+                    weather.setText(last == null ? CITY + "\\nНет данных · нажми для повтора"
                             : last + "  ·  ранее");
                     Log.w(LOG_TAG, "Weather retry in 3 min; failures: "
                             + primaryError + " / " + backupError);
@@ -192,7 +197,7 @@ public final class HomeWidgetsView extends LinearLayout {
     }
 
     private static String formatWeather(double temperature, String condition) {
-        return CITY + "  ·  " + Math.round(temperature) + "°C  " + condition;
+        return CITY + "\\n" + Math.round(temperature) + "°C   " + condition;
     }
 
     private static String openMeteoCondition(int code) {
