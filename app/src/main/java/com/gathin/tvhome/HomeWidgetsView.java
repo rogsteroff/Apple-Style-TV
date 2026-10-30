@@ -1,16 +1,10 @@
 package com.gathin.tvhome;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -28,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Small tvOS-style live weather and VPN controls. No location permission or API key needed. */
+/** Compact live weather widget. VPN remains an ordinary dock app, not a widget. */
 public final class HomeWidgetsView extends LinearLayout {
     private static final String WEATHER_URL =
             "https://api.open-meteo.com/v1/forecast?latitude=55.0415&longitude=82.9346"
@@ -44,30 +38,19 @@ public final class HomeWidgetsView extends LinearLayout {
     private final Handler main = new Handler(Looper.getMainLooper());
     private ExecutorService io = Executors.newSingleThreadExecutor();
     private final TextView weather;
-    private final TextView vpn;
     private boolean active;
     private final Runnable refresh = new Runnable() {
         @Override public void run() {
             if (!active) return;
             loadWeather();
-            updateVpn();
             main.postDelayed(this, REFRESH_MS);
         }
     };
-    private final Runnable vpnPoll = new Runnable() {
-        @Override public void run() {
-            if (!active) return;
-            updateVpn();
-            main.postDelayed(this, 5000);
-        }
-    };
-
     public HomeWidgetsView(Context context) {
         super(context);
         setOrientation(VERTICAL);
         setGravity(Gravity.END);
         setClipChildren(false);
-        int gap = dp(9);
         weather = label(16);
         weather.setText("НОВОСИБИРСК  ·  Погода…");
         weather.setFocusable(true);
@@ -77,17 +60,6 @@ public final class HomeWidgetsView extends LinearLayout {
         weather.setPadding(dp(18), dp(13), dp(18), dp(13));
         weather.setBackground(panel());
         addView(weather, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        vpn = label(15);
-        vpn.setText("VPN  ·  Проверка…");
-        vpn.setGravity(Gravity.CENTER);
-        vpn.setPadding(dp(18), dp(11), dp(18), dp(11));
-        vpn.setBackground(panel());
-        vpn.setFocusable(true);
-        vpn.setClickable(true);
-        vpn.setOnClickListener(v -> openVpn());
-        LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        lp.topMargin = gap;
-        addView(vpn, lp);
     }
 
     /** Required by Android LayoutInflater for a view declared in XML. */
@@ -118,14 +90,12 @@ public final class HomeWidgetsView extends LinearLayout {
                 .getString("last", null);
         weather.setText(last == null ? CITY + "  ·  Загрузка погоды…" : last + "  ·  ранее");
         main.post(refresh);
-        main.post(vpnPoll);
     }
     @Override protected void onDetachedFromWindow() {
         active = false;
         weatherGeneration++;
         weatherLoading = false;
         main.removeCallbacks(refresh);
-        main.removeCallbacks(vpnPoll);
         io.shutdownNow();
         super.onDetachedFromWindow();
     }
@@ -248,37 +218,4 @@ public final class HomeWidgetsView extends LinearLayout {
         return "🌡 Погода";
     }
 
-    private boolean vpnConnected() {
-        try {
-            ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm == null) return false;
-            for (Network n : cm.getAllNetworks()) {
-                NetworkCapabilities caps = cm.getNetworkCapabilities(n);
-                if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) return true;
-            }
-        } catch (Exception ignored) { }
-        return false;
-    }
-    private void updateVpn() {
-        boolean on = vpnConnected();
-        vpn.setText(on ? "🔒 VPN  ·  Включён" : "🔓 VPN  ·  Выключен");
-        vpn.setContentDescription(on ? "VPN включён. Открыть управление" : "VPN выключен. Открыть управление");
-    }
-    private void openVpn() {
-        String pkg = getResources().getString(R.string.vpn_app);
-        Intent intent = null;
-        if (pkg != null && !pkg.trim().isEmpty()) {
-            PackageManager pm = getContext().getPackageManager();
-            intent = pm.getLeanbackLaunchIntentForPackage(pkg.trim());
-            if (intent == null) intent = pm.getLaunchIntentForPackage(pkg.trim());
-        }
-        if (intent == null) intent = new Intent(Settings.ACTION_VPN_SETTINGS);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try { getContext().startActivity(intent); }
-        catch (Exception ignored) {
-            try { getContext().startActivity(new Intent(Settings.ACTION_SETTINGS)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
-            catch (Exception ignoredAgain) { }
-        }
-    }
 }
