@@ -17,7 +17,7 @@
 
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
     <string-array name="dock_apps">
-        <item>scan:393:com.google.android.youtube.tv</item>
+        <item>com.netflix.ninja</item>
         <item>com.amazon.amazonvideo.livingroom</item>
         <item>com.google.android.youtube.tv</item>
         <item>in.startv.hotstar</item>
