@@ -57,7 +57,7 @@ public final class HomeWidgetsView extends LinearLayout {
         weather.setGravity(Gravity.CENTER_VERTICAL);
         weather.setMinWidth(dp(245));
         weather.setMinHeight(dp(86));
-        weather.setText("НОВОСИБИРСК\\n☁ Загрузка погоды…");
+        weather.setText("НОВОСИБИРСК\n☁ Загрузка погоды…");
         weather.setFocusable(true);
         weather.setClickable(true);
         weather.setContentDescription("Погода в Новосибирске. Нажмите, чтобы обновить");
@@ -93,7 +93,7 @@ public final class HomeWidgetsView extends LinearLayout {
         active = true;
         String last = getContext().getSharedPreferences("home_weather", Context.MODE_PRIVATE)
                 .getString("last", null);
-        weather.setText(last == null ? CITY + "\\n☁ Загрузка погоды…" : last + "  ·  ранее");
+        weather.setText(last == null ? CITY + "\n☁ Загрузка погоды…" : last + "  ·  ранее");
         main.post(refresh);
     }
     @Override protected void onDetachedFromWindow() {
@@ -109,7 +109,7 @@ public final class HomeWidgetsView extends LinearLayout {
         if (!active || weatherLoading) return;
         weatherLoading = true;
         final int requestGeneration = weatherGeneration;
-        weather.setText(CITY + "\\n☁ Обновление…");
+        weather.setText(CITY + "\n☁ Обновление…");
         io.execute(() -> {
             String reading = null;
             Exception primaryFailure = null;
@@ -154,7 +154,7 @@ public final class HomeWidgetsView extends LinearLayout {
                 } else {
                     String last = getContext().getSharedPreferences("home_weather", Context.MODE_PRIVATE)
                             .getString("last", null);
-                    weather.setText(last == null ? CITY + "\\nНет данных · нажми для повтора"
+                    weather.setText(last == null ? CITY + "\nНет данных · нажми для повтора"
                             : last + "  ·  ранее");
                     Log.w(LOG_TAG, "Weather retry in 3 min; failures: "
                             + primaryError + " / " + backupError);
@@ -197,7 +197,7 @@ public final class HomeWidgetsView extends LinearLayout {
     }
 
     private static String formatWeather(double temperature, String condition) {
-        return CITY + "\\n" + Math.round(temperature) + "°C   " + condition;
+        return CITY + "\n" + Math.round(temperature) + "°C   " + condition;
     }
 
     private static String openMeteoCondition(int code) {
