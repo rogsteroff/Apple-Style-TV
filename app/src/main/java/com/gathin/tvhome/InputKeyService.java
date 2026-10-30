@@ -3,6 +3,11 @@ package com.gathin.tvhome;
 import android.accessibilityservice.AccessibilityService;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import java.util.Collections;
@@ -19,6 +24,31 @@ import java.util.Map;
 public class InputKeyService extends AccessibilityService {
 
     private static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
+    // Xiaomi Android TV 9 handles Netflix keycode 1001 inside WindowManager before apps see it.
+    // Watch Netflix window state as a fallback, then switch to Lampa.
+    // To disable: adb shell settings put global apple_style_tv_netflix_redirect 0
+    private static final String NETFLIX_PACKAGE = "com.netflix.ninja";
+    private static final String LAMPA_PACKAGE = "top.rootu.lampa";
+    private static final String NETFLIX_REDIRECT_SETTING = "apple_style_tv_netflix_redirect";
+    private static final String LOG_TAG = "TvHome.InputKey";
+    private static final long REDIRECT_COOLDOWN_MS = 3500L;
+    private final Handler redirectHandler = new Handler(Looper.getMainLooper());
+    private long lastRedirectAt;
+    private final Runnable redirectNetflix = () -> {
+        Intent intent = getPackageManager().getLeanbackLaunchIntentForPackage(LAMPA_PACKAGE);
+        if (intent == null) intent = getPackageManager().getLaunchIntentForPackage(LAMPA_PACKAGE);
+        if (intent == null) {
+            Log.w(LOG_TAG, "Netflix redirect skipped: Lampa not installed or not launchable");
+            return;
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(intent);
+            Log.i(LOG_TAG, "Redirected firmware Netflix launch to Lampa");
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Could not redirect Netflix to Lampa", e);
+        }
+    };
 
     private int[] inputKeycodes = new int[0];
     private Map<Integer, String> appKeys = Collections.emptyMap();
@@ -88,6 +118,7 @@ public class InputKeyService extends AccessibilityService {
 
     @Override
     public void onDestroy() {
+        redirectHandler.removeCallbacks(redirectNetflix);
         RemoteKeys.release(this);
         if (gamepads != null) gamepads.stop();
         if (consumeVolumeKeys) VolumeKeys.stop();
@@ -96,6 +127,16 @@ public class InputKeyService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (event == null || event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                || event.getPackageName() == null
+                || !NETFLIX_PACKAGE.contentEquals(event.getPackageName())) return;
+        if (Settings.Global.getInt(getContentResolver(), NETFLIX_REDIRECT_SETTING, 1) == 0) return;
+        long now = SystemClock.uptimeMillis();
+        if (now - lastRedirectAt < REDIRECT_COOLDOWN_MS) return;
+        lastRedirectAt = now;
+        redirectHandler.removeCallbacks(redirectNetflix);
+        // Let Xiaomi finish its direct Netflix launch before switching activities.
+        redirectHandler.postDelayed(redirectNetflix, 350);
     }
 
     @Override
