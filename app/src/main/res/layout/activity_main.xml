@@ -16,6 +16,13 @@
         android:importantForAccessibility="no"
         android:focusable="false" />
 
+    <!-- Original sunset mountain/lake scenery. A custom wallpaper.jpg hides it in MainActivity. -->
+    <com.gathin.tvhome.AppleSunsetLakeView
+        android:id="@+id/sunsetScenery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
     <!-- Time-of-day backdrop, drawn once a minute (config.xml sky_intensity; 0 keeps it hidden). -->
     <com.gathin.tvhome.SkyView
         android:id="@+id/sky"
@@ -206,11 +213,11 @@
                     android:singleLine="true"
                     android:ellipsize="end"
                     android:layout_marginStart="4dp"
-                    android:textColor="#8CFFFFFF"
-                    android:textSize="12sp"
-                    android:fontFamily="@string/font_medium"
-                    android:letterSpacing="0.22"
-                    android:textAllCaps="true" />
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="29sp"
+                    android:fontFamily="@string/font_regular"
+                    android:letterSpacing="0.01"
+                    android:textAllCaps="false" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -225,7 +232,7 @@
                         android:format12Hour="h:mm"
                         android:format24Hour="HH:mm"
                         android:textColor="#FFFFFFFF"
-                        android:textSize="52sp"
+                        android:textSize="69sp"
                         android:fontFamily="@string/font_light"
                         android:letterSpacing="-0.04"
                         android:includeFontPadding="false" />
@@ -394,6 +401,33 @@
             </LinearLayout>
         </RelativeLayout>
 
+        <!-- Four functional TV remote shortcuts, kept separate from the app grid. -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="БЫСТРЫЙ ДОСТУП"
+            android:textColor="#F0FFFFFF"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_medium"
+            android:letterSpacing="0.04" />
+
+        <com.gathin.tvhome.AppleQuickAccessView
+            android:id="@+id/quickAccess"
+            android:layout_width="650dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="ВСЕ ПРИЛОЖЕНИЯ"
+            android:textColor="#F0FFFFFF"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_medium"
+            android:letterSpacing="0.04" />
+
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
         <FrameLayout
             android:layout_width="match_parent"
@@ -423,7 +457,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="125dp"
+        android:layout_marginTop="146dp"
         android:layout_marginEnd="56dp" />
 
     <!-- The single floating glass highlight that springs between tiles. -->
