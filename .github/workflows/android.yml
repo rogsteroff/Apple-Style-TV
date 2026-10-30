@@ -53,7 +53,7 @@ jobs:
 
       - name: Build release APK
         run: |
-          ./gradlew :app:assembleRelease \
+          ./gradlew :app:assembleRelease :updater:assembleRelease \
             --no-daemon \
             --stacktrace
 
@@ -70,12 +70,13 @@ jobs:
           fi
 
           cp "$APK" output/AppleStyleTV.apk
+          cp updater/build/outputs/apk/release/updater-release.apk output/AppleStyleTV-Updater.apk
           ls -lh output/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: AppleStyleTV-APK
+          name: AppleStyleTV-and-Updater-APK
           path: output/AppleStyleTV.apk
           if-no-files-found: error
           retention-days: 30
