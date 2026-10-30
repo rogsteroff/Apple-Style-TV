@@ -466,6 +466,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sourcePanelExtra = cfg.sourcePanelExtra;
         coocaaSources = cfg.coocaaSources;
 
+        // Keep weather and VPN controls independent of the wallpaper and dock.
+        // The widget owns its lifecycle and does not request location permissions.
         root = findViewById(R.id.root);
         root.setBackgroundColor(cfg.backgroundColor);
         // root fills the window with an opaque colour (Config keeps background_color opaque), so the window's own
