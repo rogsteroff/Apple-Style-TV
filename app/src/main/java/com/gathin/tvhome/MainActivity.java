@@ -483,10 +483,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // the theme's background, so launch looks the same.
         getWindow().setBackgroundDrawable(null);
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
-        // Personal or downloaded wallpaper.jpg takes precedence over the bundled sunset scenery.
+        // Use the scenic lake photograph generated for 3.8 when it is bundled in the APK.
+        // The canvas-painted sunset below it is an offline fallback for local/partial builds.
+        // Old personal wallpaper.jpg files are never loaded implicitly in 3.8.
         View sunset = findViewById(R.id.sunsetScenery);
         if (sunset != null && cfg.wallpaperEnabled && !cfg.wallpapers.isEmpty()) {
             sunset.setVisibility(View.GONE);
+        } else {
+            int scenicPhotoId = getResources().getIdentifier(
+                    "apple_sunset_photo", "drawable", getPackageName());
+            if (scenicPhotoId != 0) {
+                ImageView scenicPhoto = new ImageView(this);
+                scenicPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                scenicPhoto.setImageResource(scenicPhotoId);
+                scenicPhoto.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                root.addView(scenicPhoto, 0,
+                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.MATCH_PARENT));
+                if (sunset != null) sunset.setVisibility(View.GONE);
+            }
         }
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
