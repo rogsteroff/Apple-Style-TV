@@ -482,10 +482,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // remains in external storage. Respect a wallpaper explicitly selected in Launcher Settings.
         String wallpaperChoice = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
                 .getString(Config.WALLPAPER_CHOICE_KEY, null);
-        View defaultBackdrop = findViewById(R.id.appleDefaultBackdrop);
-        if (defaultBackdrop != null && wallpaperChoice != null) {
-            defaultBackdrop.setVisibility(View.GONE);
-        }
         // root fills the window with an opaque colour (Config keeps background_color opaque), so the window's own
         // black under it is a second full-screen fill on every frame for nothing. The starting window still uses
         // the theme's background, so launch looks the same.
