@@ -31,6 +31,18 @@
     <string-array name="hidden_apps">
         <item>com.mediatek.wwtv.tvcenter</item>
         <item>com.mitv.gallery</item>
+        <!-- Hide preinstalled streaming/store shortcuts from Apple Style TV Home only. -->
+        <item>com.google.android.play.games</item>
+        <item>com.google.android.videos</item>
+        <item>com.google.android.tv</item>
+        <item>com.google.android.tvlauncher</item>
+        <item>com.mitv.tvhome</item>
+        <item>com.xiaomi.mitv.tvhome</item>
+        <item>com.xiaomi.mitv.patchwall</item>
+        <item>com.mitv.patchwall</item>
+        <item>com.google.android.tvrecommendations</item>
+        <item>com.google.android.tv.livechannels</item>
+        <item>com.google.android.tv.channels</item>
     </string-array>
 
     <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
