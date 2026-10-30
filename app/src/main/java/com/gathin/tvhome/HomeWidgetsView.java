@@ -175,7 +175,7 @@ public final class HomeWidgetsView extends LinearLayout {
             connection.setRequestProperty("Accept", "application/json");
             // met.no requests must identify the calling application.
             connection.setRequestProperty("User-Agent",
-                    "AppleStyleTV/3.7 (https://github.com/rogsteroff/Apple-Style-TV)");
+                    "AppleStyleTV/3.8 (https://github.com/rogsteroff/Apple-Style-TV)");
             int status = connection.getResponseCode();
             if (status != 200) throw new java.io.IOException("HTTP " + status);
             StringBuilder response = new StringBuilder();
