@@ -30,6 +30,15 @@
         android:layout_height="match_parent"
         android:alpha="0" />
 
+    <!-- Compact live weather and VPN controls, above the app grid. -->
+    <com.gathin.tvhome.HomeWidgetsView
+        android:id="@+id/homeWidgets"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="122dp"
+        android:layout_marginEnd="56dp" />
+
     <!-- Race-weekend panel (a theme's race_calendar, see RaceWeekend): in the free space under the clock,
          shown only from shortly before a weekend's first session until the race is over. Updated once a
          minute with the clock, never animated. -->
