@@ -428,6 +428,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
+        // Upgrade the previously selected personal background to the new nonpersonal
+        // scenery once. Preserve app order and every other launcher preference.
+        android.content.SharedPreferences stylePrefs =
+                getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
+        if (!stylePrefs.getBoolean("apple_style_38_scenery_migrated", false)) {
+            stylePrefs.edit().remove(Config.WALLPAPER_CHOICE_KEY)
+                    .putBoolean("apple_style_38_scenery_migrated", true).commit();
+        }
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
         homeAppKeys = RemoteKeys.parseAppKeys(cfg.appKeys);
