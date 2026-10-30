@@ -487,7 +487,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // The canvas-painted sunset below it is an offline fallback for local/partial builds.
         // Old personal wallpaper.jpg files are never loaded implicitly in 3.8.
         View sunset = findViewById(R.id.sunsetScenery);
-        if (sunset != null && cfg.wallpaperEnabled && !cfg.wallpapers.isEmpty()) {
+        if (sunset != null && wallpaperChoice != null && cfg.wallpaperEnabled && !cfg.wallpapers.isEmpty()) {
             sunset.setVisibility(View.GONE);
         } else {
             int scenicPhotoId = getResources().getIdentifier(
@@ -497,7 +497,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 scenicPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 scenicPhoto.setImageResource(scenicPhotoId);
                 scenicPhoto.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-                root.addView(scenicPhoto, 0,
+                // Above any leftover wallpaper.jpg which may still be present from older versions.
+                // An old personal photo must never become the 3.8 default by accident.
+                int insertAboveSunset = sunset == null ? root.getChildCount() :
+                        root.indexOfChild(sunset) + 1;
+                root.addView(scenicPhoto, insertAboveSunset,
                         new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                                 FrameLayout.LayoutParams.MATCH_PARENT));
                 if (sunset != null) sunset.setVisibility(View.GONE);
