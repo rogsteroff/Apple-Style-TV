@@ -5,6 +5,17 @@
     android:layout_height="match_parent"
     android:background="@drawable/apple_twilight_background">
 
+    <!-- Built-in nonpersonal Apple-style abstract wallpaper. The bitmap is generated during CI.
+         Unlike a personal wallpaper, this ships inside the APK and needs no manual AirHQ transfer. -->
+    <ImageView
+        android:id="@+id/appleDefaultBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/apple_abstract_background"
+        android:importantForAccessibility="no"
+        android:focusable="false" />
+
     <!-- Time-of-day backdrop, drawn once a minute (config.xml sky_intensity; 0 keeps it hidden). -->
     <com.gathin.tvhome.SkyView
         android:id="@+id/sky"
@@ -406,7 +417,7 @@
         </FrameLayout>
     </LinearLayout>
 
-    <!-- Compact live weather and VPN controls, above the app grid. -->
+    <!-- Compact live weather card (VPN widget removed in 3.8), above the app grid. -->
     <com.gathin.tvhome.HomeWidgetsView
         android:id="@+id/homeWidgets"
         android:layout_width="wrap_content"
