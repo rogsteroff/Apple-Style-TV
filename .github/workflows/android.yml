@@ -45,6 +45,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Install Python for wallpaper generation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate built-in Apple-style wallpaper
+        run: |
+          python -m pip install --disable-pip-version-check Pillow==11.3.0
+          python scripts/generate_apple_abstract.py app/src/main/res/drawable-nodpi/apple_abstract_background.jpg
+          test -s app/src/main/res/drawable-nodpi/apple_abstract_background.jpg
+
       - name: Validate Gradle wrapper
         run: |
           test -f gradlew
