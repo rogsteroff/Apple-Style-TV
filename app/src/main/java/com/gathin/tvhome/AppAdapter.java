@@ -99,7 +99,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     static final float FOCUS_SCALE = 1.10f;
     /** Design size of a tile (dp); tiles shrink from here when the columns don't fit, see tileWidthPx. */
-    static final float DESIGN_W_DP = 180f, DESIGN_H_DP = 101f;
+    static final float DESIGN_W_DP = 150f, DESIGN_H_DP = 116f;
 
     /**
      * Tile width for a grid of this inner width: the cell minus room for the focus zoom and the glass
@@ -439,7 +439,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             View icon = v.findViewById(R.id.icon);
             FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
             iconLp.width = iconLp.height = Math.round(h * ICON_SHARE);
-            iconLp.bottomMargin = 0;
+            iconLp.bottomMargin = Math.round(h * 0.16f);
             icon.setLayoutParams(iconLp);
         } else if (h < Math.round(DESIGN_H_DP * density)) {
             // Shrunk tiles (e.g. 5 or 6 columns): scale icon and bottom margin proportionally with tile height so the label does not overlap the icon.
@@ -452,7 +452,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             View label = v.findViewById(R.id.label);
             label.setPadding(label.getPaddingLeft(), label.getPaddingTop(), label.getPaddingRight(), Math.round(4f * density));
         }
-        return new Holder(v, listener, animations, advancedEffects, reducedMotion, restNameAlpha, focusOvershoot);
+        return new Holder(v, listener, animations, advancedEffects, reducedMotion, restNameAlpha, focusOvershoot, uniformTiles);
     }
 
     @Override
@@ -477,7 +477,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         // The dock has no labels, unless always_show_names asks for them (DockDecoration then makes room in the band).
         // In a single row every tile is the dock's kind: the big title above names it.
         boolean dockKind = dockRow && (singleRow || position < dockSize);
-        h.name.setVisibility(dockKind && restNameAlpha == 0f ? View.INVISIBLE : View.VISIBLE);
+        // The name is inside each glass tile, as in the reference screenshot.
+        h.name.setVisibility(uniformTiles ? View.INVISIBLE
+                : dockKind && restNameAlpha == 0f ? View.INVISIBLE : View.VISIBLE);
         h.inDock = dockKind;
         boolean focused = h.card.isFocused();   // a rebind after reload() can hit the focused tile
         h.name.setAlpha(focused ? 1f : restNameAlpha);
@@ -491,8 +493,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         // nothing on every frame; keep it under banners with transparent parts and under icon tiles.
         h.card.setBackground(e.banner != null && e.banner.getOpacity() == PixelFormat.OPAQUE ? null : h.cardBackground);
         if (uniformTiles && e.banner == null) {
-            if (e.backdrop == null) e.backdrop = backdrop(e.icon, ambientColorAt(position));
-            h.card.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, e.backdrop));
+            h.card.setBackground(glassTileBackground(focused, ctx.getResources().getDisplayMetrics().density));
         }
         if (e.banner != null) {
             h.banner.setImageDrawable(e.banner);
@@ -505,7 +506,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             h.icon.setImageDrawable(e.icon);
             h.icon.setVisibility(View.VISIBLE);
             h.label.setText(e.label);
-            h.label.setVisibility(uniformTiles ? View.GONE : View.VISIBLE);
+            h.label.setVisibility(View.VISIBLE);
         }
         h.card.setOnClickListener(v -> launch(e));
         h.card.setOnLongClickListener(v -> {
@@ -688,7 +689,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     /** Share of the tile height the icon takes in uniform_tiles mode (onCreateViewHolder). */
-    private static final float ICON_SHARE = 0.62f;
+    private static final float ICON_SHARE = 0.49f;
 
     /**
      * The colour covering most of an icon, for a card that should read as that app: a small saturated badge
@@ -877,6 +878,16 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     /** Corner radius for a tile of this width: 16dp at the design width, proportionally less when smaller. */
+    private static GradientDrawable glassTileBackground(boolean focused, float density) {
+        GradientDrawable d = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                focused ? new int[]{0xBB697487, 0xC331394C}
+                        : new int[]{0xAA343C52, 0xBD151B2B});
+        d.setCornerRadius(18f * density);
+        d.setStroke(Math.max(1, Math.round((focused ? 2f : 1f) * density)),
+                focused ? 0xFFFFF3DF : 0x668FA4C2);
+        return d;
+    }
+
     static float cornerRadius(int tileWidthPx, float density) {
         return 16f * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
     }
@@ -895,11 +906,12 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         /** Alpha of the name while the tile is not focused (always_show_names). */
         final float restNameAlpha;
         final boolean overshoot;
+        final boolean glassTiles;
         /** A dock tile: it grows in place without advanced_effects' lift, which reads as off-centre in the band (#2135). */
         boolean inDock;
 
         Holder(View v, TileListener listener, boolean animations, boolean advancedEffects,
-               boolean reducedMotion, float restNameAlpha, boolean overshoot) {
+               boolean reducedMotion, float restNameAlpha, boolean overshoot, boolean glassTiles) {
             super(v);
             card = v.findViewById(R.id.card);
             cardBackground = card.getBackground();
@@ -912,6 +924,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             this.reducedMotion = reducedMotion;
             this.restNameAlpha = restNameAlpha;
             this.overshoot = overshoot;
+            this.glassTiles = glassTiles;
 
             final float density = v.getResources().getDisplayMetrics().density;
             card.setOutlineProvider(new ViewOutlineProvider() {
@@ -932,6 +945,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             });
 
             card.setOnFocusChangeListener((view, focused) -> {
+                if (glassTiles && banner.getVisibility() == View.GONE) {
+                    view.setBackground(glassTileBackground(focused, density));
+                }
                 view.animate().cancel();
                 banner.animate().cancel();
                 name.animate().cancel();
