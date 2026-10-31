@@ -8,7 +8,7 @@ final class AppleRemoteShortcuts {
         if (scanCode == 393) return "com.google.android.youtube.tv";
         if (scanCode == 400) return "top.rootu.lampa";
         // Linux KEY_VOICECOMMAND and Android KEYCODE_VOICE_ASSIST / KEYCODE_ASSIST.
-        if (scanCode == 582 || keyCode == 231 || keyCode == 219) return "hub_plus";
+        if (scanCode == 582 || keyCode == 231 || keyCode == 219) return "com.happproxy";
         return null;
     }
 
@@ -16,7 +16,7 @@ final class AppleRemoteShortcuts {
         if ("com.netflix.ninja".equals(packageName)) return "com.google.android.youtube.tv";
         if ("com.amazon.amazonvideo.livingroom".equals(packageName)) return "top.rootu.lampa";
         if ("com.google.android.katniss".equals(packageName)
-                || "com.google.android.googlequicksearchbox".equals(packageName)) return "hub_plus";
+                || "com.google.android.googlequicksearchbox".equals(packageName)) return "com.happproxy";
         return null;
     }
 }

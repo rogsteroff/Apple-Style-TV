@@ -33,9 +33,6 @@ public class InputKeyService extends AccessibilityService {
     private Runnable pendingRedirect;
 
     private Intent shortcutIntent(String target) {
-        if ("hub_plus".equals(target)) {
-            return AppleQuickAccessView.findByLabel(getPackageManager(), 2);
-        }
         Intent intent = getPackageManager().getLeanbackLaunchIntentForPackage(target);
         if (intent == null) intent = getPackageManager().getLaunchIntentForPackage(target);
         return intent;
