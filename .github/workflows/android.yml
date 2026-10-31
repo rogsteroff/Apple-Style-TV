@@ -87,7 +87,7 @@ jobs:
 
       - name: Build release APK
         run: |
-          ./gradlew :app:assembleRelease :updater:assembleRelease \
+          ./gradlew :app:testReleaseUnitTest :app:assembleRelease :updater:assembleRelease \
             --no-daemon \
             --stacktrace
 

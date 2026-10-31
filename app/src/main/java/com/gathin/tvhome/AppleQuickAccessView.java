@@ -111,13 +111,13 @@ public final class AppleQuickAccessView extends LinearLayout {
         }
     }
 
-    private Intent launchIntent(PackageManager pm, String pkg) {
+    private static Intent launchIntent(PackageManager pm, String pkg) {
         Intent intent = pm.getLeanbackLaunchIntentForPackage(pkg);
         if (intent == null) intent = pm.getLaunchIntentForPackage(pkg);
         return intent;
     }
 
-    private Intent findByLabel(PackageManager pm, int slot) {
+    static Intent findByLabel(PackageManager pm, int slot) {
         Intent query = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
         Intent fallbackQuery = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
         List<ResolveInfo> apps = new ArrayList<>(pm.queryIntentActivities(query, 0));

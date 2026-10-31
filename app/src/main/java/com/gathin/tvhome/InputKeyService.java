@@ -24,31 +24,36 @@ import java.util.Map;
 public class InputKeyService extends AccessibilityService {
 
     private static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
-    // Xiaomi Android TV 9 handles Netflix keycode 1001 inside WindowManager before apps see it.
-    // Watch Netflix window state as a fallback, then switch to Lampa.
-    // To disable: adb shell settings put global apple_style_tv_netflix_redirect 0
-    private static final String NETFLIX_PACKAGE = "com.netflix.ninja";
-    private static final String LAMPA_PACKAGE = "top.rootu.lampa";
-    private static final String NETFLIX_REDIRECT_SETTING = "apple_style_tv_netflix_redirect";
+    // Xiaomi firmware can launch branded apps before accessibility receives a key.
+    // Retain the working window fallback, now for all three requested shortcuts.
     private static final String LOG_TAG = "TvHome.InputKey";
     private static final long REDIRECT_COOLDOWN_MS = 3500L;
     private final Handler redirectHandler = new Handler(Looper.getMainLooper());
-    private long lastRedirectAt;
-    private final Runnable redirectNetflix = () -> {
-        Intent intent = getPackageManager().getLeanbackLaunchIntentForPackage(LAMPA_PACKAGE);
-        if (intent == null) intent = getPackageManager().getLaunchIntentForPackage(LAMPA_PACKAGE);
+    private final Map<String, Long> lastRedirects = new java.util.HashMap<>();
+    private Runnable pendingRedirect;
+
+    private Intent shortcutIntent(String target) {
+        if ("hub_plus".equals(target)) {
+            return AppleQuickAccessView.findByLabel(getPackageManager(), 2);
+        }
+        Intent intent = getPackageManager().getLeanbackLaunchIntentForPackage(target);
+        if (intent == null) intent = getPackageManager().getLaunchIntentForPackage(target);
+        return intent;
+    }
+
+    private void openShortcut(String target) {
+        Intent intent = shortcutIntent(target);
         if (intent == null) {
-            Log.w(LOG_TAG, "Netflix redirect skipped: Lampa not installed or not launchable");
+            Log.w(LOG_TAG, "Shortcut not installed or not launchable: " + target);
             return;
         }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
-            startActivity(intent);
-            Log.i(LOG_TAG, "Redirected firmware Netflix launch to Lampa");
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Could not redirect Netflix to Lampa", e);
+            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            Log.i(LOG_TAG, "Opened remote shortcut: " + target);
+        } catch (ActivityNotFoundException | SecurityException e) {
+            Log.e(LOG_TAG, "Could not open remote shortcut: " + target, e);
         }
-    };
+    }
 
     private int[] inputKeycodes = new int[0];
     private Map<Integer, String> appKeys = Collections.emptyMap();
@@ -93,6 +98,14 @@ public class InputKeyService extends AccessibilityService {
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
         if (consumeVolumeKeys && VolumeKeys.handle(this, event)) return true;
+        // These build-specific mappings take precedence over old external app_keys.
+        String shortcut = AppleRemoteShortcuts.forKey(event.getScanCode(), event.getKeyCode());
+        if (shortcut != null && shortcutIntent(shortcut) != null) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                openShortcut(shortcut);
+            }
+            return true;
+        }
         // A scancode entry is more specific than any keycode, so it goes first.
         if (RemoteKeys.handle(this, event, appScancodes.get(event.getScanCode()),
                 holdAppScancodes.get(event.getScanCode()))) return true;
@@ -111,6 +124,7 @@ public class InputKeyService extends AccessibilityService {
     /** Unbound by Android: the user turned the helper off, so Home doesn't put it back (ServiceRepair). */
     @Override
     public boolean onUnbind(Intent intent) {
+        redirectHandler.removeCallbacksAndMessages(null);
         RemoteKeys.release(this);
         if (repairRecord) ServiceRepair.disconnected(this, getClass());
         return super.onUnbind(intent);
@@ -118,7 +132,7 @@ public class InputKeyService extends AccessibilityService {
 
     @Override
     public void onDestroy() {
-        redirectHandler.removeCallbacks(redirectNetflix);
+        redirectHandler.removeCallbacksAndMessages(null);
         RemoteKeys.release(this);
         if (gamepads != null) gamepads.stop();
         if (consumeVolumeKeys) VolumeKeys.stop();
@@ -128,15 +142,25 @@ public class InputKeyService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null || event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-                || event.getPackageName() == null
-                || !NETFLIX_PACKAGE.contentEquals(event.getPackageName())) return;
-        if (Settings.Global.getInt(getContentResolver(), NETFLIX_REDIRECT_SETTING, 1) == 0) return;
+                || event.getPackageName() == null) return;
+        String source = event.getPackageName().toString();
+        String target = AppleRemoteShortcuts.forWindow(source);
+        if (target == null) return;
+        String setting = "com.netflix.ninja".equals(source)
+                ? "apple_style_tv_netflix_redirect" : "apple_style_tv_remote_redirect";
+        if (Settings.Global.getInt(getContentResolver(), setting, 1) == 0) return;
+        if (shortcutIntent(target) == null) {
+            Log.w(LOG_TAG, "Window fallback target unavailable: " + target);
+            return;
+        }
         long now = SystemClock.uptimeMillis();
-        if (now - lastRedirectAt < REDIRECT_COOLDOWN_MS) return;
-        lastRedirectAt = now;
-        redirectHandler.removeCallbacks(redirectNetflix);
-        // Let Xiaomi finish its direct Netflix launch before switching activities.
-        redirectHandler.postDelayed(redirectNetflix, 350);
+        Long last = lastRedirects.get(source);
+        if (last != null && now - last < REDIRECT_COOLDOWN_MS) return;
+        lastRedirects.put(source, now);
+        if (pendingRedirect != null) redirectHandler.removeCallbacks(pendingRedirect);
+        pendingRedirect = () -> openShortcut(target);
+        // Let the firmware finish opening its activity before switching to the requested app.
+        redirectHandler.postDelayed(pendingRedirect, 350);
     }
 
     @Override
