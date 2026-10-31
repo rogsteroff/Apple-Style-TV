@@ -19,7 +19,7 @@
     <string-array name="dock_apps">
         <item>top.rootu.lampa</item>
         <item>com.google.android.youtube.tv</item>
-        <item>com.happproxy</item>
+        <item>com.yandex.browser.tv</item>
         <item>com.vk.tv</item>
     </string-array>
     <!-- With fewer dock_apps than columns (or a dock app that is not installed), the free dock slots take
