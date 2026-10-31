@@ -19,13 +19,13 @@ import java.util.Locale;
 
 /**
  * Apple Style TV quick access: real app shortcuts, not artwork baked into the wallpaper.
- * The four slots follow the owner's requested Lampa, YouTube, HAPP VPN and VK order.
+ * The four compact slots follow Lampa, YouTube, Yandex Browser and VK.
  * HAPP uses the same confirmed package as the remote assistant shortcut.
  */
 public final class AppleQuickAccessView extends LinearLayout {
-    private static final String[] TITLES = {"Лампа", "YouTube", "HAPP VPN", "ВКонтакте"};
+    private static final String[] TITLES = {"Лампа", "YouTube", "Яндекс", "ВКонтакте"};
     private static final String[] PACKAGES = {
-            "top.rootu.lampa", "com.google.android.youtube.tv", "com.happproxy", "com.vk.tv"
+            "top.rootu.lampa", "com.google.android.youtube.tv", "com.yandex.browser.tv", "com.vk.tv"
     };
     private final LinearLayout[] cards = new LinearLayout[4];
     private final ImageView[] icons = new ImageView[4];
@@ -44,9 +44,9 @@ public final class AppleQuickAccessView extends LinearLayout {
         for (int i = 0; i < TITLES.length; i++) {
             final int index = i;
             LinearLayout card = new LinearLayout(context);
-            card.setOrientation(HORIZONTAL);
-            card.setGravity(Gravity.CENTER_VERTICAL);
-            card.setPadding(dp(12), 0, dp(12), 0);
+            card.setOrientation(VERTICAL);
+            card.setGravity(Gravity.CENTER);
+            card.setPadding(dp(5), dp(5), dp(5), dp(4));
             card.setFocusable(true);
             card.setClickable(true);
             card.setBackground(background(false));
@@ -62,21 +62,22 @@ public final class AppleQuickAccessView extends LinearLayout {
             ImageView icon = new ImageView(context);
             icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
             icon.setImageResource(android.R.drawable.sym_def_app_icon);
-            card.addView(icon, new LayoutParams(dp(32), dp(32)));
+            card.addView(icon, new LayoutParams(dp(28), dp(28)));
 
             TextView label = new TextView(context);
             label.setText(TITLES[i]);
             label.setTextColor(Color.WHITE);
-            label.setTextSize(14);
+            label.setTextSize(12);
             label.setSingleLine(true);
             label.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            label.setGravity(Gravity.CENTER_VERTICAL);
-            LayoutParams labelParams = new LayoutParams(0, LayoutParams.MATCH_PARENT, 1);
-            labelParams.leftMargin = dp(9);
+            label.setGravity(Gravity.CENTER);
+            LayoutParams labelParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            labelParams.topMargin = dp(3);
             card.addView(label, labelParams);
 
-            LayoutParams cardParams = new LayoutParams(0, dp(62), 1);
-            if (i > 0) cardParams.leftMargin = dp(11);
+            // Compact ~105dp cards instead of stretching across the entire TV width.
+            LayoutParams cardParams = new LayoutParams(dp(105), dp(64));
+            if (i > 0) cardParams.leftMargin = dp(8);
             addView(card, cardParams);
             cards[i] = card;
             icons[i] = icon;
@@ -130,7 +131,7 @@ public final class AppleQuickAccessView extends LinearLayout {
             switch (slot) {
                 case 0: match = label.contains("lampa") || label.contains("лампа"); break;
                 case 1: match = label.contains("youtube") || label.contains("ютуб"); break;
-                case 2: match = pkg.equals("com.happproxy"); break;
+                case 2: match = pkg.equals("com.yandex.browser.tv") || label.contains("яндекс") && label.contains("браузер") || label.contains("yandex browser"); break;
                 default: match = label.contains("вконтакте") || label.equals("vk") || label.equals("vk video"); break;
             }
             if (!match) continue;
