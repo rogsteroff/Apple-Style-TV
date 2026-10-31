@@ -19,13 +19,13 @@ import java.util.Locale;
 
 /**
  * Apple Style TV quick access: real app shortcuts, not artwork baked into the wallpaper.
- * The four slots follow the owner's requested Lampa, YouTube, Hub Plus and VK order.
- * Hub Plus can have a vendor-specific package ID, so it is discovered by its installed label.
+ * The four slots follow the owner's requested Lampa, YouTube, HAPP VPN and VK order.
+ * HAPP uses the same confirmed package as the remote assistant shortcut.
  */
 public final class AppleQuickAccessView extends LinearLayout {
-    private static final String[] TITLES = {"Лампа", "YouTube", "Hub Plus", "ВКонтакте"};
+    private static final String[] TITLES = {"Лампа", "YouTube", "HAPP VPN", "ВКонтакте"};
     private static final String[] PACKAGES = {
-            "top.rootu.lampa", "com.google.android.youtube.tv", "", "com.vk.tv"
+            "top.rootu.lampa", "com.google.android.youtube.tv", "com.happproxy", "com.vk.tv"
     };
     private final LinearLayout[] cards = new LinearLayout[4];
     private final ImageView[] icons = new ImageView[4];
@@ -130,7 +130,7 @@ public final class AppleQuickAccessView extends LinearLayout {
             switch (slot) {
                 case 0: match = label.contains("lampa") || label.contains("лампа"); break;
                 case 1: match = label.contains("youtube") || label.contains("ютуб"); break;
-                case 2: match = label.contains("hub plus") || label.contains("hubplus") || label.contains("hub+") || label.contains("хаб плюс"); break;
+                case 2: match = pkg.equals("com.happproxy"); break;
                 default: match = label.contains("вконтакте") || label.equals("vk") || label.equals("vk video"); break;
             }
             if (!match) continue;
