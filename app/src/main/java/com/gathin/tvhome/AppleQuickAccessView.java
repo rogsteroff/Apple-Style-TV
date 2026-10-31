@@ -20,7 +20,7 @@ import java.util.Locale;
 /**
  * Apple Style TV quick access: real app shortcuts, not artwork baked into the wallpaper.
  * The four compact slots follow Lampa, YouTube, Yandex Browser and VK.
- * HAPP uses the same confirmed package as the remote assistant shortcut.
+ * Focused cards receive the luminous champagne border from the owner's mockup.
  */
 public final class AppleQuickAccessView extends LinearLayout {
     private static final String[] TITLES = {"Лампа", "YouTube", "Яндекс", "ВКонтакте"};
@@ -46,10 +46,11 @@ public final class AppleQuickAccessView extends LinearLayout {
             LinearLayout card = new LinearLayout(context);
             card.setOrientation(VERTICAL);
             card.setGravity(Gravity.CENTER);
-            card.setPadding(dp(5), dp(5), dp(5), dp(4));
+            card.setPadding(dp(3), dp(5), dp(3), dp(4));
             card.setFocusable(true);
             card.setClickable(true);
             card.setBackground(background(false));
+            card.setElevation(dp(3));
             card.setNextFocusDownId(R.id.grid);
             card.setContentDescription(TITLES[i]);
             card.setOnClickListener(v -> open(index));
@@ -62,22 +63,22 @@ public final class AppleQuickAccessView extends LinearLayout {
             ImageView icon = new ImageView(context);
             icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
             icon.setImageResource(android.R.drawable.sym_def_app_icon);
-            card.addView(icon, new LayoutParams(dp(28), dp(28)));
+            card.addView(icon, new LayoutParams(dp(24), dp(24)));
 
             TextView label = new TextView(context);
             label.setText(TITLES[i]);
             label.setTextColor(Color.WHITE);
-            label.setTextSize(12);
+            label.setTextSize(11);
             label.setSingleLine(true);
             label.setEllipsize(android.text.TextUtils.TruncateAt.END);
             label.setGravity(Gravity.CENTER);
             LayoutParams labelParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-            labelParams.topMargin = dp(3);
+            labelParams.topMargin = dp(5);
             card.addView(label, labelParams);
 
-            // Compact ~105dp cards instead of stretching across the entire TV width.
-            LayoutParams cardParams = new LayoutParams(dp(105), dp(64));
-            if (i > 0) cardParams.leftMargin = dp(8);
+            // Small square-ish glass buttons, rather than long pill-like launcher tiles.
+            LayoutParams cardParams = new LayoutParams(dp(90), dp(72));
+            if (i > 0) cardParams.leftMargin = dp(9);
             addView(card, cardParams);
             cards[i] = card;
             icons[i] = icon;
@@ -152,9 +153,12 @@ public final class AppleQuickAccessView extends LinearLayout {
 
     private GradientDrawable background(boolean focused) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(focused ? 0xA04E648B : 0x91303C58);
-        d.setCornerRadius(dp(18));
-        d.setStroke(dp(focused ? 2 : 1), focused ? 0xFF82B5FF : 0x66DDE9FF);
+        d.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
+        d.setColors(focused
+                ? new int[]{0xB78490A4, 0xB84B5269}
+                : new int[]{0x8F45536B, 0xA4243148});
+        d.setCornerRadius(dp(16));
+        d.setStroke(dp(focused ? 2 : 1), focused ? 0xFFFFF3DF : 0x6FB3C2DD);
         return d;
     }
 
