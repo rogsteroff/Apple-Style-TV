@@ -1,14 +1,16 @@
 
 name: Build Apple Style TV APK
+# Rebuild after configuring permanent signing secrets
 
 on:
   push:
     branches:
       - main-mobile
+      - feature/weather-vpn-widgets
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-build-${{ github.ref }}
@@ -43,6 +45,20 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Install Python for scenic wallpaper
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate bundled sunset lake photo (nonpersonal)
+        run: |
+          python -m pip install --disable-pip-version-check Pillow==11.3.0
+          python scripts/generate_apple_abstract.py app/src/main/res/drawable-nodpi/apple_abstract_background.jpg
+          python scripts/prepare_apple_sunset.py \
+            app/src/main/res/drawable-nodpi/apple_sunset_photo.jpg \
+            app/src/main/res/drawable-nodpi/apple_abstract_background.jpg
+          test -s app/src/main/res/drawable-nodpi/apple_sunset_photo.jpg
+
       - name: Validate Gradle wrapper
         run: |
           test -f gradlew
@@ -50,9 +66,28 @@ jobs:
           test -f gradle/wrapper/gradle-wrapper.properties
           chmod +x gradlew
 
+      - name: Restore permanent release signing key
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.TV_SIGNING_KEYSTORE_BASE64 }}
+          TV_SIGNING_STORE_PASSWORD: ${{ secrets.TV_SIGNING_STORE_PASSWORD }}
+          TV_SIGNING_KEY_ALIAS: ${{ secrets.TV_SIGNING_KEY_ALIAS }}
+          TV_SIGNING_KEY_PASSWORD: ${{ secrets.TV_SIGNING_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$SIGNING_KEYSTORE_BASE64" || { echo 'Missing TV_SIGNING_KEYSTORE_BASE64 secret'; exit 1; }
+          test -n "$TV_SIGNING_STORE_PASSWORD" || { echo 'Missing signing store password'; exit 1; }
+          test -n "$TV_SIGNING_KEY_ALIAS" || { echo 'Missing signing key alias'; exit 1; }
+          test -n "$TV_SIGNING_KEY_PASSWORD" || { echo 'Missing signing key password'; exit 1; }
+          printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/apple-style-release.jks"
+          chmod 600 "$RUNNER_TEMP/apple-style-release.jks"
+          echo "TV_SIGNING_KEYSTORE=$RUNNER_TEMP/apple-style-release.jks" >> "$GITHUB_ENV"
+          echo "TV_SIGNING_STORE_PASSWORD=$TV_SIGNING_STORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "TV_SIGNING_KEY_ALIAS=$TV_SIGNING_KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "TV_SIGNING_KEY_PASSWORD=$TV_SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
+
       - name: Build release APK
         run: |
-          ./gradlew :app:assembleRelease \
+          ./gradlew :app:testReleaseUnitTest :app:assembleRelease :updater:assembleRelease \
             --no-daemon \
             --stacktrace
 
@@ -69,12 +104,34 @@ jobs:
           fi
 
           cp "$APK" output/AppleStyleTV.apk
+          cp updater/build/outputs/apk/release/updater-release.apk output/AppleStyleTV-Updater.apk
+          test -s output/AppleStyleTV.apk
+          test -s output/AppleStyleTV-Updater.apk
           ls -lh output/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: AppleStyleTV-APK
-          path: output/AppleStyleTV.apk
+          name: AppleStyleTV-and-Updater-APK
+          path: output/*.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish signed release for the updater
+        if: github.ref == 'refs/heads/feature/weather-vpn-widgets'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION=$(awk -F"'" '/versionName/ {print $2; exit}' app/build.gradle)
+          test -n "$VERSION"
+          TAG="v$VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" output/AppleStyleTV.apk output/AppleStyleTV-Updater.apk --clobber
+          else
+            gh release create "$TAG" output/AppleStyleTV.apk output/AppleStyleTV-Updater.apk \
+              --target "$GITHUB_SHA" \
+              --title "Apple Style TV $VERSION" \
+              --notes "Signed APK built automatically from the Apple Style TV source. Includes weather-only home widget and bundled nonpersonal Apple-style wallpaper."
+          fi

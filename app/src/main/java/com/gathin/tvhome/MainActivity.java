@@ -428,6 +428,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
+        // Upgrade the previously selected personal background to the new nonpersonal
+        // scenery once. Preserve app order and every other launcher preference.
+        android.content.SharedPreferences stylePrefs =
+                getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
+        if (!stylePrefs.getBoolean("apple_style_38_scenery_migrated", false)) {
+            stylePrefs.edit().remove(Config.WALLPAPER_CHOICE_KEY)
+                    .putBoolean("apple_style_38_scenery_migrated", true).commit();
+        }
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
         homeAppKeys = RemoteKeys.parseAppKeys(cfg.appKeys);
@@ -466,13 +474,43 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sourcePanelExtra = cfg.sourcePanelExtra;
         coocaaSources = cfg.coocaaSources;
 
+        // Keep weather and VPN controls independent of the wallpaper and dock.
+        // The widget owns its lifecycle and does not request location permissions.
         root = findViewById(R.id.root);
         root.setBackgroundColor(cfg.backgroundColor);
+        // The built-in Apple-style artwork is the default even when an old wallpaper.jpg
+        // remains in external storage. Respect a wallpaper explicitly selected in Launcher Settings.
+        String wallpaperChoice = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
+                .getString(Config.WALLPAPER_CHOICE_KEY, null);
         // root fills the window with an opaque colour (Config keeps background_color opaque), so the window's own
         // black under it is a second full-screen fill on every frame for nothing. The starting window still uses
         // the theme's background, so launch looks the same.
         getWindow().setBackgroundDrawable(null);
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
+        // Use the scenic lake photograph generated for 3.8 when it is bundled in the APK.
+        // The canvas-painted sunset below it is an offline fallback for local/partial builds.
+        // Old personal wallpaper.jpg files are never loaded implicitly in 3.8.
+        View sunset = findViewById(R.id.sunsetScenery);
+        if (sunset != null && wallpaperChoice != null && cfg.wallpaperEnabled && !cfg.wallpapers.isEmpty()) {
+            sunset.setVisibility(View.GONE);
+        } else {
+            int scenicPhotoId = getResources().getIdentifier(
+                    "apple_sunset_photo", "drawable", getPackageName());
+            if (scenicPhotoId != 0) {
+                ImageView scenicPhoto = new ImageView(this);
+                scenicPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                scenicPhoto.setImageResource(scenicPhotoId);
+                scenicPhoto.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                // Above any leftover wallpaper.jpg which may still be present from older versions.
+                // An old personal photo must never become the 3.8 default by accident.
+                int insertAboveSunset = sunset == null ? root.getChildCount() :
+                        root.indexOfChild(sunset) + 1;
+                root.addView(scenicPhoto, insertAboveSunset,
+                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.MATCH_PARENT));
+                if (sunset != null) sunset.setVisibility(View.GONE);
+            }
+        }
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
         glass = findViewById(R.id.glass);
@@ -1012,6 +1050,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        AppleQuickAccessView shortcuts = findViewById(R.id.quickAccess);
+        if (shortcuts != null) shortcuts.refresh();
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();

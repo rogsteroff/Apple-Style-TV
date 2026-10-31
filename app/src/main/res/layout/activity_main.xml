@@ -3,7 +3,14 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF000000">
+    android:background="@drawable/apple_twilight_background">
+
+    <!-- Original sunset mountain/lake scenery. A custom wallpaper.jpg hides it in MainActivity. -->
+    <com.gathin.tvhome.AppleSunsetLakeView
+        android:id="@+id/sunsetScenery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
 
     <!-- Time-of-day backdrop, drawn once a minute (config.xml sky_intensity; 0 keeps it hidden). -->
     <com.gathin.tvhome.SkyView
@@ -29,6 +36,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0" />
+
+
 
     <!-- Race-weekend panel (a theme's race_calendar, see RaceWeekend): in the free space under the clock,
          shown only from shortly before a weekend's first session until the race is over. Updated once a
@@ -193,11 +202,11 @@
                     android:singleLine="true"
                     android:ellipsize="end"
                     android:layout_marginStart="4dp"
-                    android:textColor="#8CFFFFFF"
-                    android:textSize="12sp"
-                    android:fontFamily="@string/font_medium"
-                    android:letterSpacing="0.22"
-                    android:textAllCaps="true" />
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="29sp"
+                    android:fontFamily="@string/font_regular"
+                    android:letterSpacing="0.01"
+                    android:textAllCaps="false" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -212,7 +221,7 @@
                         android:format12Hour="h:mm"
                         android:format24Hour="HH:mm"
                         android:textColor="#FFFFFFFF"
-                        android:textSize="52sp"
+                        android:textSize="69sp"
                         android:fontFamily="@string/font_light"
                         android:letterSpacing="-0.04"
                         android:includeFontPadding="false" />
@@ -326,6 +335,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
+                android:layout_marginEnd="255dp"
                 android:layout_alignBottom="@id/leftBlock"
                 android:layout_marginBottom="6dp"
                 android:clipChildren="false"
@@ -381,6 +391,44 @@
             </LinearLayout>
         </RelativeLayout>
 
+        <!-- Real TV-app launchers, focusable with the remote. Weather remains above on the right. -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="37dp"
+            android:focusable="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="10dp"
+            android:text="Быстрый доступ"
+            android:textColor="#F1FFFFFF"
+            android:textSize="19sp"
+            android:fontFamily="@string/font_medium"
+            android:focusable="false" />
+
+        <com.gathin.tvhome.AppleQuickAccessView
+            android:id="@+id/quickAccess"
+            android:layout_width="wrap_content"
+            android:layout_height="80dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/appleAppsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginStart="5dp"
+            android:text="Все приложения"
+            android:textColor="#F1FFFFFF"
+            android:textSize="20sp"
+            android:fontFamily="@string/font_medium"
+            android:focusable="false" />
+
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
         <FrameLayout
             android:layout_width="match_parent"
@@ -403,6 +451,15 @@
                 android:descendantFocusability="afterDescendants" />
         </FrameLayout>
     </LinearLayout>
+
+    <!-- Compact live weather card (VPN widget removed in 3.8), above the app grid. -->
+    <com.gathin.tvhome.HomeWidgetsView
+        android:id="@+id/homeWidgets"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="56dp" />
 
     <!-- The single floating glass highlight that springs between tiles. -->
     <com.gathin.tvhome.GlassView

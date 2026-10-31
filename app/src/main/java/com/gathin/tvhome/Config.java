@@ -642,8 +642,10 @@ final class Config {
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
-        // A theme can also switch the wallpaper off while the file is still there.
-        boolean wallpaperEnabled = json == null || bool(json, "wallpaper", true);
+        // v3.8 defaults to its fresh public sunset backdrop. Keep old wallpaper.jpg intact but
+        // do not silently reuse it, especially if it contains a personal photograph.
+        // To explicitly re-enable a user-supplied wallpaper, set "wallpaper": true in config.json.
+        boolean wallpaperEnabled = json != null && bool(json, "wallpaper", false);
         if (!wallpaperEnabled) wallpaper = null;
         int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
         int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);

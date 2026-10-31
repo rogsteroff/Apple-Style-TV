@@ -11,8 +11,17 @@ android {
       applicationId 'com.gathin.tvhome.applestyle'
         minSdk 26
         targetSdk 34
-        versionCode 11
-        versionName '3.2'
+        versionCode 23
+        versionName '3.14'
+    }
+
+    signingConfigs {
+        production {
+            storeFile file(System.getenv('TV_SIGNING_KEYSTORE') ?: 'missing-release-key.jks')
+            storePassword System.getenv('TV_SIGNING_STORE_PASSWORD') ?: ''
+            keyAlias System.getenv('TV_SIGNING_KEY_ALIAS') ?: ''
+            keyPassword System.getenv('TV_SIGNING_KEY_PASSWORD') ?: ''
+        }
     }
 
     buildTypes {
@@ -21,8 +30,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Sideloaded over ADB, never published: sign with the debug key so it installs over a debug build.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.production
         }
     }
 

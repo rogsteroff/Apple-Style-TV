@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.gathin.tvupdater'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.gathin.tvupdater'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        production {
+            storeFile file(System.getenv('TV_SIGNING_KEYSTORE') ?: 'missing-release-key.jks')
+            storePassword System.getenv('TV_SIGNING_STORE_PASSWORD') ?: ''
+            keyAlias System.getenv('TV_SIGNING_KEY_ALIAS') ?: ''
+            keyPassword System.getenv('TV_SIGNING_KEY_PASSWORD') ?: ''
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.production
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
