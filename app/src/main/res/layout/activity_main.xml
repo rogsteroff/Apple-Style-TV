@@ -335,6 +335,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
+                android:layout_marginEnd="255dp"
                 android:layout_alignBottom="@id/leftBlock"
                 android:layout_marginBottom="6dp"
                 android:clipChildren="false"
@@ -410,7 +411,7 @@
         <com.gathin.tvhome.AppleQuickAccessView
             android:id="@+id/quickAccess"
             android:layout_width="wrap_content"
-            android:layout_height="65dp"
+            android:layout_height="80dp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:clipChildren="false"
@@ -420,7 +421,7 @@
             android:id="@+id/appleAppsTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
+            android:layout_marginTop="18dp"
             android:layout_marginStart="5dp"
             android:text="Все приложения"
             android:textColor="#F1FFFFFF"
@@ -457,7 +458,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="109dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="56dp" />
 
     <!-- The single floating glass highlight that springs between tiles. -->
