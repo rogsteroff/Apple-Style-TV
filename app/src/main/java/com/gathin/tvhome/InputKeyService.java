@@ -31,6 +31,7 @@ public class InputKeyService extends AccessibilityService {
     private final Handler redirectHandler = new Handler(Looper.getMainLooper());
     private final Map<String, Long> lastRedirects = new java.util.HashMap<>();
     private Runnable pendingRedirect;
+    private NetflixVpnController youtubeVpn;
 
     private Intent shortcutIntent(String target) {
         Intent intent = getPackageManager().getLeanbackLaunchIntentForPackage(target);
@@ -39,6 +40,14 @@ public class InputKeyService extends AccessibilityService {
     }
 
     private void openShortcut(String target) {
+        if ("com.google.android.youtube.tv".equals(target) && youtubeVpn != null) {
+            youtubeVpn.start();
+            return;
+        }
+        openShortcutDirect(target);
+    }
+
+    private void openShortcutDirect(String target) {
         Intent intent = shortcutIntent(target);
         if (intent == null) {
             Log.w(LOG_TAG, "Shortcut not installed or not launchable: " + target);
@@ -67,6 +76,8 @@ public class InputKeyService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        youtubeVpn = new NetflixVpnController(this, redirectHandler,
+                () -> openShortcutDirect("com.google.android.youtube.tv"));
         // From config.xml or a theme's config.json; theme.sh rebinds this service after a push.
         Config config = Config.load(this);
         // restore_key_services: note that this helper runs, so Home can put it back after a force stop.
@@ -122,6 +133,7 @@ public class InputKeyService extends AccessibilityService {
     @Override
     public boolean onUnbind(Intent intent) {
         redirectHandler.removeCallbacksAndMessages(null);
+        if (youtubeVpn != null) youtubeVpn.abandon();
         RemoteKeys.release(this);
         if (repairRecord) ServiceRepair.disconnected(this, getClass());
         return super.onUnbind(intent);
@@ -130,6 +142,7 @@ public class InputKeyService extends AccessibilityService {
     @Override
     public void onDestroy() {
         redirectHandler.removeCallbacksAndMessages(null);
+        if (youtubeVpn != null) youtubeVpn.abandon();
         RemoteKeys.release(this);
         if (gamepads != null) gamepads.stop();
         if (consumeVolumeKeys) VolumeKeys.stop();
@@ -141,6 +154,7 @@ public class InputKeyService extends AccessibilityService {
         if (event == null || event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
                 || event.getPackageName() == null) return;
         String source = event.getPackageName().toString();
+        if (youtubeVpn != null) youtubeVpn.onWindow(source);
         String target = AppleRemoteShortcuts.forWindow(source);
         if (target == null) return;
         String setting = "com.netflix.ninja".equals(source)
